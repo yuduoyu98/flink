@@ -23,11 +23,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.apache.flink</groupId>
-		<artifactId>flink-parent</artifactId>
+		<artifactId>flink-process-function-parent</artifactId>
 		<version>1.18-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>flink-process-function</artifactId>
+	<artifactId>flink-process-function-api</artifactId>
+
+	<packaging>jar</packaging>
 
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -35,11 +37,4 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-process-function-api</artifactId>
-			<version>1.18-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
 </project>

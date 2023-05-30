@@ -27,7 +27,9 @@
 		<version>1.18-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>flink-process-function-api</artifactId>
+	<artifactId>flink-process-function-parent</artifactId>
+
+	<packaging>pom</packaging>
 
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -35,4 +37,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<modules>
+		<module>flink-process-function-api</module>
+		<module>flink-process-function</module>
+		<module>flink-process-function-examples</module>
+	</modules>
 </project>

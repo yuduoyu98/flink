@@ -23,11 +23,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.apache.flink</groupId>
-		<artifactId>flink-parent</artifactId>
+		<artifactId>flink-process-function-parent</artifactId>
 		<version>1.18-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>flink-process-function-examples</artifactId>
+	<artifactId>flink-process-function</artifactId>
+
+	<packaging>jar</packaging>
 
 	<properties>
 		<maven.compiler.source>11</maven.compiler.source>
