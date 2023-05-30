@@ -18,19 +18,9 @@
 
 package org.apache.flink.processfunction.api;
 
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
-public abstract class ExecutionEnvironment {
-    public static ExecutionEnvironment getExecutionEnvironment()
-            throws ReflectiveOperationException {
-        return (ExecutionEnvironment)
-                Class.forName("org.apache.flink.processfunction.ExecutionEnvironmentImpl")
-                        .getMethod("newInstance")
-                        .invoke(null);
-    }
-
-    public abstract void execute();
-
-    /** TODO: Temporal method. Will revisit source functions later. */
-    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier);
+public interface DataStream<T> {
+    /** TODO: Temporal method. Will revisit sink functions later. */
+    void tmpToConsumerSink(Consumer<T> consumer);
 }

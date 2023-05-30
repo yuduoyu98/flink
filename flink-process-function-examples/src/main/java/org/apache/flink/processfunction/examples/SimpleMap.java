@@ -23,6 +23,8 @@ import org.apache.flink.processfunction.api.ExecutionEnvironment;
 /** Usage: Must be executed with flink-process-function jar in classpath. */
 public class SimpleMap {
     public static void main(String[] args) throws Exception {
-        ExecutionEnvironment.getExecutionEnvironment().foo();
+        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
+        env.tmpFromSupplierSource(System::currentTimeMillis).tmpToConsumerSink(System.out::println);
+        env.execute();
     }
 }

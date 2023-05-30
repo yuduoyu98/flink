@@ -16,21 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.api;
+package org.apache.flink.processfunction;
 
-import java.util.function.Supplier;
+import org.apache.flink.processfunction.api.DataStream;
 
-public abstract class ExecutionEnvironment {
-    public static ExecutionEnvironment getExecutionEnvironment()
-            throws ReflectiveOperationException {
-        return (ExecutionEnvironment)
-                Class.forName("org.apache.flink.processfunction.ExecutionEnvironmentImpl")
-                        .getMethod("newInstance")
-                        .invoke(null);
+import java.util.function.Consumer;
+
+public class DataStreamImpl<T> implements DataStream<T> {
+    @Override
+    public void tmpToConsumerSink(Consumer<T> consumer) {
+        // TODO: keep calling `consumer.accept()` at runtime
     }
-
-    public abstract void execute();
-
-    /** TODO: Temporal method. Will revisit source functions later. */
-    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier);
 }

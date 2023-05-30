@@ -18,7 +18,10 @@
 
 package org.apache.flink.processfunction;
 
+import org.apache.flink.processfunction.api.DataStream;
 import org.apache.flink.processfunction.api.ExecutionEnvironment;
+
+import java.util.function.Supplier;
 
 public class ExecutionEnvironmentImpl extends ExecutionEnvironment {
     public static ExecutionEnvironmentImpl newInstance() {
@@ -26,7 +29,13 @@ public class ExecutionEnvironmentImpl extends ExecutionEnvironment {
     }
 
     @Override
-    public void foo() {
-        System.out.println(getClass().getSimpleName());
+    public void execute() {
+        // TODO: submit job for execution
+    }
+
+    @Override
+    public <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier) {
+        // TODO: keep calling `supplier.get()` at runtime
+        return new DataStreamImpl<>();
     }
 }
