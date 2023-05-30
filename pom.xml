@@ -102,7 +102,10 @@ under the License.
 		<module>flink-kubernetes</module>
 		<module>flink-external-resources</module>
 		<module>tools/ci/flink-ci-tools</module>
-	</modules>
+        <module>flink-process-function-api</module>
+		<module>flink-process-function</module>
+        <module>flink-process-function-examples</module>
+    </modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
