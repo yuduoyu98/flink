@@ -18,9 +18,9 @@
 
 package org.apache.flink.processfunction.api;
 
-import java.util.function.Consumer;
+import org.apache.flink.util.function.ConsumerFunction;
 
 public interface DataStream<T> {
     /** TODO: Temporal method. Will revisit sink functions later. */
-    void tmpToConsumerSink(Consumer<T> consumer);
+    void tmpToConsumerSink(ConsumerFunction<T> consumer);
 }

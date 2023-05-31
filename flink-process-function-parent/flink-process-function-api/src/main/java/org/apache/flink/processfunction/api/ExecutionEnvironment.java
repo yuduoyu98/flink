@@ -18,7 +18,7 @@
 
 package org.apache.flink.processfunction.api;
 
-import java.util.function.Supplier;
+import org.apache.flink.util.function.SupplierFunction;
 
 public abstract class ExecutionEnvironment {
     public static ExecutionEnvironment getExecutionEnvironment()
@@ -32,5 +32,5 @@ public abstract class ExecutionEnvironment {
     public abstract void execute() throws Exception;
 
     /** TODO: Temporal method. Will revisit source functions later. */
-    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier);
+    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(SupplierFunction<OUT> supplier);
 }

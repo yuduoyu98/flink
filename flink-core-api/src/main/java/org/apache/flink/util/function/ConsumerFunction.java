@@ -16,17 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.examples;
+package org.apache.flink.util.function;
 
-import org.apache.flink.processfunction.api.ExecutionEnvironment;
+import org.apache.flink.annotation.Public;
+import org.apache.flink.api.common.functions.Function;
 
-/** Usage: Must be executed with flink-process-function jar in classpath. */
-public class SimpleMap {
-    public static void main(String[] args) throws Exception {
-        ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-        env.tmpFromSupplierSource(System::currentTimeMillis)
-                // Don't use Lambda reference as PrintStream is not serializable.
-                .tmpToConsumerSink((data) -> System.out.println(data));
-        env.execute();
-    }
-}
+import java.util.function.Consumer;
+
+/**
+ * A {@link Consumer} but implements {@link Function} to support serialization and type inference.
+ */
+@Public
+@FunctionalInterface
+public interface ConsumerFunction<T> extends Consumer<T>, Function {}

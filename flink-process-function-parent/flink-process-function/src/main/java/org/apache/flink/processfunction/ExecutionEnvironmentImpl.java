@@ -33,12 +33,12 @@ import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.flink.streaming.api.graph.StreamGraphGenerator;
 import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.FlinkException;
+import org.apache.flink.util.function.SupplierFunction;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
 
 import static org.apache.flink.streaming.api.graph.StreamGraphGenerator.DEFAULT_TIME_CHARACTERISTIC;
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -63,7 +63,7 @@ public class ExecutionEnvironmentImpl extends ExecutionEnvironment {
     }
 
     @Override
-    public <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier) {
+    public <OUT> DataStream<OUT> tmpFromSupplierSource(SupplierFunction<OUT> supplier) {
         // TODO: keep calling `supplier.get()` at runtime
         return new DataStreamImpl<>();
     }

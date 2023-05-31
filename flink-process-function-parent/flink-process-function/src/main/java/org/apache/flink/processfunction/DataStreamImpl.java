@@ -19,12 +19,11 @@
 package org.apache.flink.processfunction;
 
 import org.apache.flink.processfunction.api.DataStream;
-
-import java.util.function.Consumer;
+import org.apache.flink.util.function.ConsumerFunction;
 
 public class DataStreamImpl<T> implements DataStream<T> {
     @Override
-    public void tmpToConsumerSink(Consumer<T> consumer) {
+    public void tmpToConsumerSink(ConsumerFunction<T> consumer) {
         // TODO: keep calling `consumer.accept()` at runtime
     }
 }

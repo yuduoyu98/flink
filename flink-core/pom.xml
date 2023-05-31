@@ -36,7 +36,7 @@ under the License.
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.flink</groupId>
-			<artifactId>flink-annotations</artifactId>
+			<artifactId>flink-core-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
