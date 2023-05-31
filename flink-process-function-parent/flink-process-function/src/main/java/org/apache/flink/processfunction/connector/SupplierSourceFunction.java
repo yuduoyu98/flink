@@ -16,24 +16,33 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.api;
+package org.apache.flink.processfunction.connector;
 
+import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.flink.util.function.SupplierFunction;
 
-public abstract class ExecutionEnvironment {
-    public static ExecutionEnvironment getExecutionEnvironment()
-            throws ReflectiveOperationException {
-        return (ExecutionEnvironment)
-                Class.forName("org.apache.flink.processfunction.ExecutionEnvironmentImpl")
-                        .getMethod("newInstance")
-                        .invoke(null);
+/** Legacy implementation for SupplierSource. */
+public class SupplierSourceFunction<OUT> implements SourceFunction<OUT> {
+    private volatile boolean isRunning = true;
+
+    private final SupplierFunction<OUT> dataSupplier;
+
+    public SupplierSourceFunction(SupplierFunction<OUT> dataSupplier) {
+        this.dataSupplier = dataSupplier;
     }
 
-    public abstract void execute() throws Exception;
+    @Override
+    public void run(SourceContext<OUT> ctx) throws Exception {
+        while (isRunning) {
+            OUT data = dataSupplier.get();
+            ctx.collect(data);
+            //noinspection BusyWait
+            Thread.sleep(1000L);
+        }
+    }
 
-    /**
-     * TODO: 1. Temporal method. Will revisit source functions later. 2. Refactor and move the type
-     * information related code to core-api module.
-     */
-    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(SupplierFunction<OUT> supplier);
+    @Override
+    public void cancel() {
+        isRunning = false;
+    }
 }

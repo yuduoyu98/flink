@@ -18,12 +18,46 @@
 
 package org.apache.flink.processfunction;
 
+import org.apache.flink.api.dag.Transformation;
 import org.apache.flink.processfunction.api.DataStream;
+import org.apache.flink.processfunction.connector.ConsumerSinkFunction;
+import org.apache.flink.streaming.api.operators.StreamSink;
+import org.apache.flink.streaming.api.transformations.LegacySinkTransformation;
+import org.apache.flink.streaming.api.transformations.PhysicalTransformation;
+import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.function.ConsumerFunction;
 
 public class DataStreamImpl<T> implements DataStream<T> {
+    private final ExecutionEnvironmentImpl environment;
+    private final Transformation<T> transformation;
+
+    public DataStreamImpl(ExecutionEnvironmentImpl environment, Transformation<T> transformation) {
+        this.environment =
+                Preconditions.checkNotNull(environment, "Execution Environment must not be null.");
+        this.transformation =
+                Preconditions.checkNotNull(
+                        transformation, "Stream Transformation must not be null.");
+    }
+
     @Override
     public void tmpToConsumerSink(ConsumerFunction<T> consumer) {
-        // TODO: keep calling `consumer.accept()` at runtime
+        // read the output type of the input Transform to coax out errors about MissingTypeInfo
+        transformation.getOutputType();
+
+        ConsumerSinkFunction<T> sinkFunction = new ConsumerSinkFunction<>(consumer);
+
+        // TODO Supports clean closure
+        StreamSink<T> sinkOperator = new StreamSink<>(sinkFunction);
+
+        PhysicalTransformation<T> sinkTransformation =
+                new LegacySinkTransformation<>(
+                        transformation,
+                        "Consumer Sink",
+                        sinkOperator,
+                        // TODO Supports configure parallelism
+                        1,
+                        true);
+
+        environment.addOperator(sinkTransformation);
     }
 }

@@ -16,24 +16,21 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.api;
+package org.apache.flink.processfunction.connector;
 
-import org.apache.flink.util.function.SupplierFunction;
+import org.apache.flink.streaming.api.functions.sink.SinkFunction;
+import org.apache.flink.util.function.ConsumerFunction;
 
-public abstract class ExecutionEnvironment {
-    public static ExecutionEnvironment getExecutionEnvironment()
-            throws ReflectiveOperationException {
-        return (ExecutionEnvironment)
-                Class.forName("org.apache.flink.processfunction.ExecutionEnvironmentImpl")
-                        .getMethod("newInstance")
-                        .invoke(null);
+/** Legacy implementation for ConsumerSink. */
+public class ConsumerSinkFunction<IN> implements SinkFunction<IN> {
+    private final ConsumerFunction<IN> dataConsumer;
+
+    public ConsumerSinkFunction(ConsumerFunction<IN> dataConsumer) {
+        this.dataConsumer = dataConsumer;
     }
 
-    public abstract void execute() throws Exception;
-
-    /**
-     * TODO: 1. Temporal method. Will revisit source functions later. 2. Refactor and move the type
-     * information related code to core-api module.
-     */
-    public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(SupplierFunction<OUT> supplier);
+    @Override
+    public void invoke(IN value, Context context) {
+        dataConsumer.accept(value);
+    }
 }

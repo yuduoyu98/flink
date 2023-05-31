@@ -20,7 +20,7 @@ package org.apache.flink.processfunction.examples;
 
 import org.apache.flink.processfunction.api.ExecutionEnvironment;
 
-/** Usage: Must be executed with flink-process-function jar in classpath. */
+/** Usage: Must be executed with flink-process-function and flink-dist jar in classpath. */
 public class SimpleMap {
     public static void main(String[] args) throws Exception {
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();

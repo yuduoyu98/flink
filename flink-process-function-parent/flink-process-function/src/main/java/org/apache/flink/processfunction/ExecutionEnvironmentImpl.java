@@ -19,7 +19,10 @@
 package org.apache.flink.processfunction;
 
 import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.connector.source.Boundedness;
 import org.apache.flink.api.dag.Transformation;
+import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.client.deployment.executors.LocalExecutorFactory;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.DeploymentOptions;
@@ -28,11 +31,15 @@ import org.apache.flink.core.execution.PipelineExecutor;
 import org.apache.flink.core.execution.PipelineExecutorFactory;
 import org.apache.flink.processfunction.api.DataStream;
 import org.apache.flink.processfunction.api.ExecutionEnvironment;
+import org.apache.flink.processfunction.connector.SupplierSourceFunction;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.graph.StreamGraph;
 import org.apache.flink.streaming.api.graph.StreamGraphGenerator;
+import org.apache.flink.streaming.api.operators.StreamSource;
+import org.apache.flink.streaming.api.transformations.LegacySourceTransformation;
 import org.apache.flink.util.ExceptionUtils;
 import org.apache.flink.util.FlinkException;
+import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.function.SupplierFunction;
 
 import java.util.ArrayList;
@@ -64,8 +71,36 @@ public class ExecutionEnvironmentImpl extends ExecutionEnvironment {
 
     @Override
     public <OUT> DataStream<OUT> tmpFromSupplierSource(SupplierFunction<OUT> supplier) {
-        // TODO: keep calling `supplier.get()` at runtime
-        return new DataStreamImpl<>();
+        final String sourceName = "Supplier Source";
+        // TODO Supports clean closure
+        final SupplierSourceFunction<OUT> sourceFunction = new SupplierSourceFunction<>(supplier);
+        final TypeInformation<OUT> resolvedTypeInfo =
+                TypeExtractor.getUnaryOperatorReturnType(
+                        supplier,
+                        SupplierFunction.class,
+                        -1,
+                        0,
+                        TypeExtractor.NO_INDEX,
+                        null,
+                        null,
+                        false);
+
+        final StreamSource<OUT, ?> sourceOperator = new StreamSource<>(sourceFunction);
+        return new DataStreamImpl<>(
+                this,
+                new LegacySourceTransformation<>(
+                        sourceName,
+                        sourceOperator,
+                        resolvedTypeInfo,
+                        // TODO Supports configure parallelism
+                        1,
+                        Boundedness.CONTINUOUS_UNBOUNDED,
+                        true));
+    }
+
+    public void addOperator(Transformation<?> transformation) {
+        Preconditions.checkNotNull(transformation, "transformation must not be null.");
+        this.transformations.add(transformation);
     }
 
     // -----------------------------------------------
