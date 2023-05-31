@@ -29,7 +29,7 @@ public abstract class ExecutionEnvironment {
                         .invoke(null);
     }
 
-    public abstract void execute();
+    public abstract void execute() throws Exception;
 
     /** TODO: Temporal method. Will revisit source functions later. */
     public abstract <OUT> DataStream<OUT> tmpFromSupplierSource(Supplier<OUT> supplier);
