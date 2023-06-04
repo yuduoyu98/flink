@@ -26,6 +26,7 @@ import org.apache.flink.processfunction.api.StateDescriptor;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /** Usage: Must be executed with flink-process-function and flink-dist jar in classpath. */
 public class SimpleStatefulMap {
@@ -43,13 +44,12 @@ public class SimpleStatefulMap {
         static final String STATE_ID = "lastTimestamp";
 
         @Override
-        public Long processRecord(Long record, RuntimeContext ctx) {
+        public void processRecord(Long record, Consumer<Long> output, RuntimeContext ctx) {
             State state = ctx.getState(STATE_ID);
             // TODO:
             //  long diff = record - state.getValue();
             //  state.setValue(record)
-            //  return diff;
-            return record;
+            //  output.accept(diff);
         }
 
         @Override

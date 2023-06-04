@@ -29,9 +29,10 @@ public class SimpleMap {
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         env.tmpFromSupplierSource(System::currentTimeMillis)
                 .process(
-                        (tsLong, ctx) ->
-                                new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS")
-                                        .format(new Date(tsLong)))
+                        (tsLong, output, ctx) ->
+                                output.accept(
+                                        new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS")
+                                                .format(new Date(tsLong))))
                 // Don't use Lambda reference as PrintStream is not serializable.
                 .tmpToConsumerSink((tsStr) -> System.out.println(tsStr));
         env.execute();
