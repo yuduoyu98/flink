@@ -18,4 +18,6 @@
 
 package org.apache.flink.processfunction.api;
 
-public interface RuntimeContext {}
+public interface RuntimeContext {
+    State getState(String stateId);
+}
