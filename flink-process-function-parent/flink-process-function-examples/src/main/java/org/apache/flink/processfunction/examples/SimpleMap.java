@@ -29,7 +29,7 @@ public class SimpleMap {
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         env.tmpFromSupplierSource(System::currentTimeMillis)
                 .process(
-                        tsLong ->
+                        (tsLong, ctx) ->
                                 new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS")
                                         .format(new Date(tsLong)))
                 // Don't use Lambda reference as PrintStream is not serializable.

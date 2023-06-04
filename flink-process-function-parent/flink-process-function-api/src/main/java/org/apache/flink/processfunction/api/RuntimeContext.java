@@ -18,7 +18,4 @@
 
 package org.apache.flink.processfunction.api;
 
-@FunctionalInterface
-public interface ProcessFunction<IN, OUT> {
-    OUT processRecord(IN record, RuntimeContext ctx);
-}
+public interface RuntimeContext {}
