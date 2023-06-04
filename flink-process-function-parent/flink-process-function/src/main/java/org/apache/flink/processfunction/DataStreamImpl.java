@@ -20,6 +20,7 @@ package org.apache.flink.processfunction;
 
 import org.apache.flink.api.dag.Transformation;
 import org.apache.flink.processfunction.api.DataStream;
+import org.apache.flink.processfunction.api.ProcessFunction;
 import org.apache.flink.processfunction.connector.ConsumerSinkFunction;
 import org.apache.flink.streaming.api.operators.StreamSink;
 import org.apache.flink.streaming.api.transformations.LegacySinkTransformation;
@@ -37,6 +38,12 @@ public class DataStreamImpl<T> implements DataStream<T> {
         this.transformation =
                 Preconditions.checkNotNull(
                         transformation, "Stream Transformation must not be null.");
+    }
+
+    @Override
+    public <OUT> DataStream<OUT> process(ProcessFunction<T, OUT> processFunction) {
+        // TODO: Add implementation that calls processFunction.processRecord() in runtime
+        return null;
     }
 
     @Override

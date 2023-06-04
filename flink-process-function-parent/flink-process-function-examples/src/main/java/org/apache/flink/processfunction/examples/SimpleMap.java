@@ -20,13 +20,20 @@ package org.apache.flink.processfunction.examples;
 
 import org.apache.flink.processfunction.api.ExecutionEnvironment;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /** Usage: Must be executed with flink-process-function and flink-dist jar in classpath. */
 public class SimpleMap {
     public static void main(String[] args) throws Exception {
         ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         env.tmpFromSupplierSource(System::currentTimeMillis)
+                .process(
+                        tsLong ->
+                                new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS")
+                                        .format(new Date(tsLong)))
                 // Don't use Lambda reference as PrintStream is not serializable.
-                .tmpToConsumerSink((data) -> System.out.println(data));
+                .tmpToConsumerSink((tsStr) -> System.out.println(tsStr));
         env.execute();
     }
 }
