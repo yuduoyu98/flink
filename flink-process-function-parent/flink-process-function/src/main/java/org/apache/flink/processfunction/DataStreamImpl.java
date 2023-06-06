@@ -18,12 +18,19 @@
 
 package org.apache.flink.processfunction;
 
+import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.dag.Transformation;
+import org.apache.flink.api.java.Utils;
+import org.apache.flink.api.java.typeutils.TypeExtractor;
 import org.apache.flink.processfunction.api.DataStream;
 import org.apache.flink.processfunction.api.ProcessFunction;
 import org.apache.flink.processfunction.connector.ConsumerSinkFunction;
+import org.apache.flink.processfunction.operators.ProcessOperator;
+import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
+import org.apache.flink.streaming.api.operators.SimpleUdfStreamOperatorFactory;
 import org.apache.flink.streaming.api.operators.StreamSink;
 import org.apache.flink.streaming.api.transformations.LegacySinkTransformation;
+import org.apache.flink.streaming.api.transformations.OneInputTransformation;
 import org.apache.flink.streaming.api.transformations.PhysicalTransformation;
 import org.apache.flink.util.Preconditions;
 import org.apache.flink.util.function.ConsumerFunction;
@@ -42,8 +49,19 @@ public class DataStreamImpl<T> implements DataStream<T> {
 
     @Override
     public <OUT> DataStream<OUT> process(ProcessFunction<T, OUT> processFunction) {
-        // TODO: Add implementation that calls processFunction.processRecord() in runtime
-        return null;
+        TypeInformation<OUT> outType =
+                TypeExtractor.getUnaryOperatorReturnType(
+                        processFunction,
+                        ProcessFunction.class,
+                        0,
+                        1,
+                        new int[] {1, 0},
+                        getType(),
+                        Utils.getCallLocationName(),
+                        true);
+        ProcessOperator<T, OUT> operator = new ProcessOperator<>(processFunction);
+
+        return transform("Process", outType, operator);
     }
 
     @Override
@@ -66,5 +84,38 @@ public class DataStreamImpl<T> implements DataStream<T> {
                         true);
 
         environment.addOperator(sinkTransformation);
+    }
+
+    /**
+     * Gets the type of the stream.
+     *
+     * @return The type of the DataStream.
+     */
+    private TypeInformation<T> getType() {
+        return transformation.getOutputType();
+    }
+
+    private <R> DataStream<R> transform(
+            String operatorName,
+            TypeInformation<R> outputTypeInfo,
+            OneInputStreamOperator<T, R> operator) {
+        // read the output type of the input Transform to coax out errors about MissingTypeInfo
+        transformation.getOutputType();
+
+        OneInputTransformation<T, R> resultTransform =
+                new OneInputTransformation<>(
+                        this.transformation,
+                        operatorName,
+                        SimpleUdfStreamOperatorFactory.of(operator),
+                        outputTypeInfo,
+                        // TODO Supports set parallelism.
+                        1,
+                        true);
+
+        DataStream<R> returnStream = new DataStreamImpl<>(environment, resultTransform);
+
+        environment.addOperator(resultTransform);
+
+        return returnStream;
     }
 }

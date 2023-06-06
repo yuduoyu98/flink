@@ -18,12 +18,14 @@
 
 package org.apache.flink.processfunction.api;
 
+import org.apache.flink.api.common.functions.Function;
+
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface ProcessFunction<IN, OUT> {
+public interface ProcessFunction<IN, OUT> extends Function {
     void processRecord(IN record, Consumer<OUT> output, RuntimeContext ctx);
 
     // Explicitly declares states upfront. See FLIP-22.
