@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.api;
+package org.apache.flink.api.common.state;
 
-public interface StateDescriptor {}
+/** Declaration for state. */
+public interface StateDeclaration {}

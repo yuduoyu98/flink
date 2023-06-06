@@ -18,11 +18,13 @@
 
 package org.apache.flink.processfunction.examples;
 
+import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.state.ListStateDeclaration;
+import org.apache.flink.api.common.state.StateDeclaration;
+import org.apache.flink.api.common.typeinfo.TypeDescriptors;
 import org.apache.flink.processfunction.api.ExecutionEnvironment;
 import org.apache.flink.processfunction.api.ProcessFunction;
 import org.apache.flink.processfunction.api.RuntimeContext;
-import org.apache.flink.processfunction.api.State;
-import org.apache.flink.processfunction.api.StateDescriptor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -36,26 +38,35 @@ public class SimpleStatefulMap {
                 .process(new CalcTimeDiffFunc())
                 // Don't use Lambda reference as PrintStream is not serializable.
                 .tmpToConsumerSink(
-                        (timeDiff) -> System.out.println("%d milliseconds since last timestamp."));
+                        (timeDiff) ->
+                                System.out.printf(
+                                        "%d milliseconds since last timestamp. \n", timeDiff));
         env.execute();
     }
 
     private static class CalcTimeDiffFunc implements ProcessFunction<Long, Long> {
+
         static final String STATE_ID = "lastTimestamp";
 
         @Override
-        public void processRecord(Long record, Consumer<Long> output, RuntimeContext ctx) {
-            State state = ctx.getState(STATE_ID);
-            // TODO:
-            //  long diff = record - state.getValue();
-            //  state.setValue(record)
-            //  output.accept(diff);
+        public void processRecord(Long record, Consumer<Long> output, RuntimeContext ctx)
+                throws Exception {
+            ListState<Long> state = ctx.getListState(STATE_ID);
+            if (!state.get().iterator().hasNext()) {
+                // for first record
+                output.accept(0L);
+            } else {
+                long diff = record - state.get().iterator().next();
+                output.accept(diff);
+            }
+            state.update(Collections.singletonList(record));
         }
 
         @Override
-        public Map<String, StateDescriptor> usesStates() {
-            // TODO: state descriptor for type LONG
-            return Collections.singletonMap(STATE_ID, null);
+        public Map<String, StateDeclaration> usesStates() {
+            ListStateDeclaration<Long> listStateDeclaration =
+                    new ListStateDeclaration<>(STATE_ID, TypeDescriptors.LONG);
+            return Collections.singletonMap(STATE_ID, listStateDeclaration);
         }
     }
 }

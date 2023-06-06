@@ -18,14 +18,20 @@
 
 package org.apache.flink.processfunction.operators;
 
+import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.state.ListStateDeclaration;
+import org.apache.flink.api.common.state.ListStateDescriptor;
+import org.apache.flink.api.common.state.StateDeclaration;
+import org.apache.flink.api.common.state.StateDeclarationConverter;
 import org.apache.flink.processfunction.api.ProcessFunction;
 import org.apache.flink.processfunction.api.RuntimeContext;
-import org.apache.flink.processfunction.api.State;
 import org.apache.flink.streaming.api.operators.AbstractUdfStreamOperator;
 import org.apache.flink.streaming.api.operators.ChainingStrategy;
 import org.apache.flink.streaming.api.operators.OneInputStreamOperator;
 import org.apache.flink.streaming.runtime.streamrecord.StreamRecord;
+import org.apache.flink.util.Preconditions;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /** Operator for {@link org.apache.flink.processfunction.api.ProcessFunction}. */
@@ -51,7 +57,7 @@ public class ProcessOperator<IN, OUT>
     }
 
     @Override
-    public void processElement(StreamRecord<IN> element) {
+    public void processElement(StreamRecord<IN> element) throws Exception {
         userFunction.processRecord(element.getValue(), outputCollector, context);
     }
 
@@ -65,12 +71,24 @@ public class ProcessOperator<IN, OUT>
         }
     }
 
-    private static class ContextImpl implements RuntimeContext {
+    private class ContextImpl implements RuntimeContext {
+        private final Map<String, StateDeclaration> allRegisteredStates;
+
+        private ContextImpl() {
+            allRegisteredStates = userFunction.usesStates();
+        }
 
         @Override
-        public State getState(String stateId) {
-            // TODO return state.
-            return null;
+        public <T> ListState<T> getListState(String stateId) throws Exception {
+            StateDeclaration stateDeclaration = allRegisteredStates.get(stateId);
+            Preconditions.checkNotNull(stateDeclaration, "No list state with id: " + stateId);
+            Preconditions.checkState(stateDeclaration instanceof ListStateDeclaration);
+
+            //noinspection unchecked
+            ListStateDescriptor<T> listStateDescriptor =
+                    StateDeclarationConverter.getListStateDescriptor(
+                            (ListStateDeclaration<T>) stateDeclaration);
+            return getOperatorStateBackend().getListState(listStateDescriptor);
         }
     }
 }

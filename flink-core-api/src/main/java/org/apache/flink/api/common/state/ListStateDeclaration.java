@@ -16,10 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.flink.processfunction.api;
+package org.apache.flink.api.common.state;
 
-import org.apache.flink.api.common.state.ListState;
+import org.apache.flink.api.common.typeinfo.TypeDescriptor;
 
-public interface RuntimeContext {
-    <T> ListState<T> getListState(String stateId) throws Exception;
+public class ListStateDeclaration<T> implements StateDeclaration {
+    private final String name;
+
+    private final TypeDescriptor<T> elementTypeDescriptor;
+
+    public ListStateDeclaration(String name, TypeDescriptor<T> elementTypeDescriptor) {
+        this.name = name;
+        this.elementTypeDescriptor = elementTypeDescriptor;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public TypeDescriptor<T> getElementTypeDescriptor() {
+        return elementTypeDescriptor;
+    }
 }

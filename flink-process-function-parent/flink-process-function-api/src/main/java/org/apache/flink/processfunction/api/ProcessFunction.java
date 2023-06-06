@@ -19,6 +19,7 @@
 package org.apache.flink.processfunction.api;
 
 import org.apache.flink.api.common.functions.Function;
+import org.apache.flink.api.common.state.StateDeclaration;
 
 import java.util.Collections;
 import java.util.Map;
@@ -26,10 +27,10 @@ import java.util.function.Consumer;
 
 @FunctionalInterface
 public interface ProcessFunction<IN, OUT> extends Function {
-    void processRecord(IN record, Consumer<OUT> output, RuntimeContext ctx);
+    void processRecord(IN record, Consumer<OUT> output, RuntimeContext ctx) throws Exception;
 
     // Explicitly declares states upfront. See FLIP-22.
-    default Map<String, StateDescriptor> usesStates() { // stateId -> stateDescriptor
+    default Map<String, StateDeclaration> usesStates() { // stateId -> stateDeclaration
         return Collections.emptyMap();
     }
 }
