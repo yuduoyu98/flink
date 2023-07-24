@@ -141,10 +141,12 @@ public abstract class AbstractStreamTaskNetworkInput<
         }
     }
 
+    //处理StreamElement
     private void processElement(StreamElement recordOrMark, DataOutput<T> output) throws Exception {
         if (recordOrMark.isRecord()) {
             output.emitRecord(recordOrMark.asRecord());
         } else if (recordOrMark.isWatermark()) {
+            //处理watermark
             statusWatermarkValve.inputWatermark(
                     recordOrMark.asWatermark(), flattenedChannelIndices.get(lastChannel), output);
         } else if (recordOrMark.isLatencyMarker()) {

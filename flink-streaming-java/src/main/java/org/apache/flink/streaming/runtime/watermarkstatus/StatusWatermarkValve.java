@@ -47,6 +47,7 @@ public class StatusWatermarkValve {
      * Array of current status of all input channels. Changes as watermarks & watermark statuses are
      * fed into the valve.
      */
+    // 所有输入信道的watermark相关信息
     private final InputChannelStatus[] channelStatuses;
 
     /** The last watermark emitted from the valve. */
@@ -56,6 +57,7 @@ public class StatusWatermarkValve {
     private WatermarkStatus lastOutputWatermarkStatus;
 
     /** A heap-based priority queue to help find the minimum watermark. */
+    //一个方便找出最小watermark的基于堆实现的优先队列
     private final HeapPriorityQueue<InputChannelStatus> alignedChannelStatuses;
 
     /**
@@ -68,9 +70,11 @@ public class StatusWatermarkValve {
         this.channelStatuses = new InputChannelStatus[numInputChannels];
         this.alignedChannelStatuses =
                 new HeapPriorityQueue<>(
+                        //最小堆 根据watermark进行优先级排序
                         (left, right) -> Long.compare(left.watermark, right.watermark),
                         numInputChannels);
         for (int i = 0; i < numInputChannels; i++) {
+            //初始化
             channelStatuses[i] = new InputChannelStatus();
             channelStatuses[i].watermark = Long.MIN_VALUE;
             channelStatuses[i].watermarkStatus = WatermarkStatus.ACTIVE;
@@ -94,6 +98,7 @@ public class StatusWatermarkValve {
             throws Exception {
         // ignore the input watermark if its input channel, or all input channels are idle (i.e.
         // overall the valve is idle).
+        // 非IDLE状态
         if (lastOutputWatermarkStatus.isActive()
                 && channelStatuses[channelIndex].watermarkStatus.isActive()) {
             long watermarkMillis = watermark.getTimestamp();
@@ -101,17 +106,19 @@ public class StatusWatermarkValve {
             // if the input watermark's value is less than the last received watermark for its input
             // channel, ignore it also.
             if (watermarkMillis > channelStatuses[channelIndex].watermark) {
+                //更新当前信道的watermark
                 channelStatuses[channelIndex].watermark = watermarkMillis;
-
+                //非对齐只有两种可能：1.WatermarkStatus为IDLE 2.从IDLE恢复为ACTIVE但是watermark没有赶上lastOutputWatermark
                 if (channelStatuses[channelIndex].isWatermarkAligned) {
+                    //更新了channel的watermark，需要重新堆为有序
                     adjustAlignedChannelStatuses(channelStatuses[channelIndex]);
                 } else if (watermarkMillis >= lastOutputWatermark) {
-                    // previously unaligned input channels are now aligned if its watermark has
-                    // caught up
+                    //如果处于非对齐状态->判断是否需要更新对齐状态->判断依据：当前channel的watermark是否已经赶上lastOutputWatermark
                     markWatermarkAligned(channelStatuses[channelIndex]);
                 }
 
                 // now, attempt to find a new min watermark across all aligned channels
+                //尝试emit watermark，判断依据：1.是否存在对齐的channel 2.堆顶最小的watermark是否大于lastOutputWatermark
                 findAndOutputNewMinWatermarkAcrossAlignedChannels(output);
             }
         }
@@ -195,6 +202,7 @@ public class StatusWatermarkValve {
 
         // we acknowledge and output the new overall watermark if it really is aggregated
         // from some remaining aligned channel, and is also larger than the last output watermark
+        //1. 存在对齐的channel 2.最小的watermark > lastOutputWatermark
         if (hasAlignedChannels && alignedChannelStatuses.peek().watermark > lastOutputWatermark) {
             lastOutputWatermark = alignedChannelStatuses.peek().watermark;
             output.emitWatermark(new Watermark(lastOutputWatermark));
@@ -257,7 +265,7 @@ public class StatusWatermarkValve {
      * watermark output from the valve.
      *
      * <p>There are 2 situations where a channel's watermark is not considered aligned:
-     *
+     * <p>信道未对齐的两种情况：
      * <ul>
      *   <li>the current watermark status of the channel is idle
      *   <li>the watermark status has resumed to be active, but the watermark of the channel hasn't
@@ -268,6 +276,7 @@ public class StatusWatermarkValve {
      * #alignedChannelStatuses} to help find minimum watermark.
      */
     @VisibleForTesting
+    //堆管理的信道状态对象
     protected static class InputChannelStatus implements HeapPriorityQueueElement {
         protected long watermark;
         protected WatermarkStatus watermarkStatus;

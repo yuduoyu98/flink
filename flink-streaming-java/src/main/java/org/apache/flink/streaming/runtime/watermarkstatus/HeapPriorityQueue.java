@@ -46,6 +46,7 @@ import static org.apache.flink.util.CollectionUtil.MAX_ARRAY_SIZE;
 public class HeapPriorityQueue<T extends HeapPriorityQueue.HeapPriorityQueueElement> {
 
     /** The index of the head element in the array that represents the heap. */
+    //利用数组表示完全二叉树，数组下标为0处空置不使用，1处为堆顶元素下标
     private static final int QUEUE_HEAD_INDEX = 1;
 
     /** Comparator for the priority of contained elements. */
@@ -171,6 +172,7 @@ public class HeapPriorityQueue<T extends HeapPriorityQueue.HeapPriorityQueueElem
     }
 
     private void adjustElementAtIndex(T element, int index) {
+        //先下沉，如果发现并没有实际的下沉则进行上浮
         siftDown(index);
         if (queue[index] == element) {
             siftUp(index);
